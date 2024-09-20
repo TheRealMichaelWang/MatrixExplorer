@@ -37,7 +37,7 @@ int main()
 
 	instance.declare_global("mat", instance.make_foreign_function(MatrixExplorer::make_matrix));
 	instance.declare_global("vec", instance.make_foreign_function(MatrixExplorer::make_vector));
-	instance.declare_global("ident", MatrixExplorer::make_identity_mat);
+	instance.declare_global("ident", instance.make_foreign_function(MatrixExplorer::make_identity_mat));
 
 	while (!should_quit) {
 		cout << ">>> ";

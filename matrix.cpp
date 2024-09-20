@@ -43,6 +43,18 @@ HulaScript::instance::value matrix::set_elem(std::vector<HulaScript::instance::v
 	return HulaScript::instance::value(arguments[2]);
 }
 
+HulaScript::instance::value matrix::transpose(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	std::vector<double> new_elems(rows * cols);
+
+	for (size_t i = 0; i < rows; i++) {
+		for (size_t j = 0; j < cols; j++) {
+			new_elems[j * rows + i] = elems[i * cols + j];
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(cols, rows, new_elems));
+}
+
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
@@ -99,17 +111,17 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 	}
 
 	std::vector<double> new_elems;
-	new_elems.reserve(rows * cols);
+	new_elems.reserve(rows * mat_operand->cols);
 	
 	size_t common = cols;
 	for (size_t i = 0; i < rows; i++) {
-		for (size_t j = 0; j < cols; j++)
+		for (size_t j = 0; j < mat_operand->cols; j++)
 		{
 			//result i,j = row i of this dot cols j of operand
 			double sum = 0;
 			for (size_t k = 0; k < common; k++)
 			{
-				sum += elems[i * cols + k] * elems[k + j * mat_operand->cols];
+				sum += elems[i * cols + k] * mat_operand->elems[j + k * mat_operand->cols];
 			}
 			new_elems.push_back(sum);
 		}
@@ -147,7 +159,20 @@ HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::
 		else {
 			common_vec_dim = dim.first;
 		}
+
+		elems.insert(elems.end(), arg_mat->elements(), arg_mat->elements() + (dim.second * dim.first));
 	}
+
+	size_t rows = common_vec_dim.has_value() ? common_vec_dim.value() : 0;
+	
+	std::vector<double> new_elems(elems.size());
+	for (size_t i = 0; i < arguments.size(); i++) {
+		for (size_t j = 0; j < rows; j++) {
+			new_elems[j * arguments.size() + i] = elems[i * rows + j];
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(rows, arguments.size(), new_elems));
 }
 
 HulaScript::instance::value MatrixExplorer::make_vector(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
@@ -168,7 +193,7 @@ HulaScript::instance::value MatrixExplorer::make_identity_mat(std::vector<HulaSc
 		instance.panic(ss.str());
 	}
 
-	int64_t dim = arguments[0].index(0, UINT64_MAX, instance);
+	int64_t dim = arguments[0].index(0, INT64_MAX, instance);
 	
 	std::vector<double> elems;
 	elems.reserve(dim * dim);

@@ -11,7 +11,7 @@ std::string matrix::to_string() {
 			if (j != 0) {
 				ss << ", ";
 			}
-			ss << elems[i * cols + j];
+			ss << elems.get()[i * cols + j];
 		}
 		ss << "\n";
 	}
