@@ -23,6 +23,9 @@ namespace MatrixExplorer {
 		HulaScript::instance::value reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
+		HulaScript::instance::value get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+
 		//add one to get right elementary matrix
 
 		void swap_rows(size_t a, size_t b);
@@ -40,6 +43,9 @@ namespace MatrixExplorer {
 			declare_method("augment", &matrix::augment);
 			declare_method("ref", &matrix::reduced_echelon_form);
 			declare_method("rref", &matrix::row_reduced_echelon_form);
+
+			declare_method("coef", &matrix::get_coefficient_matrix);
+			declare_method("sol", &matrix::get_solution_column);
 		}
 
 		const std::pair<size_t, size_t> dims() const noexcept {

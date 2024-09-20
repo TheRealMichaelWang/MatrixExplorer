@@ -100,6 +100,30 @@ HulaScript::instance::value MatrixExplorer::matrix::row_reduced_echelon_form(std
 	return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
 }
 
+HulaScript::instance::value MatrixExplorer::matrix::get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	std::vector<double> toret_elems;
+	toret_elems.reserve(rows * (cols - 1));
+
+	for (size_t i = 0; i < rows; i++) {
+		for (size_t j = 0; j < cols - 1; j++) {
+			toret_elems.push_back(elems[i * cols + j]);
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols - 1, toret_elems)));
+}
+
+HulaScript::instance::value MatrixExplorer::matrix::get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	std::vector<double> toret_elems;
+	toret_elems.reserve(rows);
+
+	for (size_t i = 0; i < rows; i++) {
+		toret_elems.push_back(elems[i * cols + (cols - 1)]);
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, 1, toret_elems)));
+}
+
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
