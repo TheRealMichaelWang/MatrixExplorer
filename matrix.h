@@ -19,7 +19,7 @@ namespace MatrixExplorer {
 	
 	public:
 		matrix(size_t rows, size_t cols, std::vector<double> elems_vec) : rows(rows), cols(cols), elems(new double[elems_vec.size()]) {
-			assert(elems_vec.size() == row * col);
+			assert(elems_vec.size() == rows * cols);
 			std::memcpy(elems.get(), elems_vec.data(), elems_vec.size());
 
 			declare_method("get", get_elem);

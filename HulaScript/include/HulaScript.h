@@ -23,7 +23,7 @@ namespace HulaScript {
 		class foreign_object;
 
 		struct value {
-		private:
+		public:
 			enum vtype : uint8_t {
 				NIL,
 				NUMBER,
@@ -37,7 +37,9 @@ namespace HulaScript {
 				FOREIGN_FUNCTION,
 				INTERNAL_STRHASH,
 				INTERNAL_LAZY_TABLE_ITERATOR
-			} type;
+			};
+		private:
+			vtype type;
 
 			enum flags {
 				NONE = 0,
@@ -76,6 +78,11 @@ namespace HulaScript {
 			double number(instance& instance) const {
 				expect_type(vtype::NUMBER, instance);
 				return data.number;
+			}
+
+			foreign_object* foreign_obj(instance& instance) const {
+				expect_type(vtype::FOREIGN_OBJECT, instance);
+				return data.foreign_object;
 			}
 
 			size_t index(size_t min, size_t max, instance& instance) const;
