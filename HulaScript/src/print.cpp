@@ -243,6 +243,11 @@ std::string instance::get_value_print_string(value to_print_init) {
 			}
 
 			continue;
+
+		case value::vtype::FOREIGN_OBJECT: {
+			ss << current.data.foreign_object->to_string();
+			break;
+		}
 		}
 		}
 

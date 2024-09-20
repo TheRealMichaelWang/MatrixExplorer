@@ -22,8 +22,16 @@ namespace MatrixExplorer {
 			assert(elems_vec.size() == rows * cols);
 			std::memcpy(elems.get(), elems_vec.data(), elems_vec.size());
 
-			declare_method("get", get_elem);
-			declare_method("set", set_elem);
+			declare_method("get", &matrix::get_elem);
+			declare_method("set", &matrix::set_elem);
+		}
+
+		const std::pair<size_t, size_t> dims() const noexcept {
+			return std::make_pair(rows, cols);
 		}
 	};
+
+	HulaScript::instance::value make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
+	HulaScript::instance::value make_vector(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
+	HulaScript::instance::value make_identity_mat(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
 }

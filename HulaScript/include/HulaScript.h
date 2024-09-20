@@ -85,7 +85,7 @@ namespace HulaScript {
 				return data.foreign_object;
 			}
 
-			size_t index(size_t min, size_t max, instance& instance) const;
+			int64_t index(int64_t min, int64_t max, instance& instance) const;
 
 			bool boolean(instance& instance) const {
 				expect_type(vtype::BOOLEAN, instance);
@@ -156,6 +156,7 @@ namespace HulaScript {
 			virtual value exponentiate_operator(value& operand, instance& instance) { return value(); }
 
 			virtual void trace(std::vector<value>& to_trace) { }
+			virtual std::string to_string() { return "Untitled Foreign Object"; }
 
 			friend class instance;
 		};

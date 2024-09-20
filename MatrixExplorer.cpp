@@ -4,6 +4,7 @@
 #include <iostream>
 #include "repl_completer.h"
 #include "HulaScript.h"
+#include "matrix.h"
 
 using namespace std;
 
@@ -33,6 +34,10 @@ int main()
 
 	instance.declare_global("quit", instance.make_foreign_function(quit));
 	instance.declare_global("print", instance.make_foreign_function(print));
+
+	instance.declare_global("mat", instance.make_foreign_function(MatrixExplorer::make_matrix));
+	instance.declare_global("vec", instance.make_foreign_function(MatrixExplorer::make_vector));
+	instance.declare_global("ident", MatrixExplorer::make_identity_mat);
 
 	while (!should_quit) {
 		cout << ">>> ";

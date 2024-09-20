@@ -3,7 +3,7 @@
 
 using namespace MatrixExplorer;
 
-size_t HulaScript::instance::value::index(size_t min, size_t max, HulaScript::instance& instance) const {
+int64_t HulaScript::instance::value::index(int64_t min, int64_t max, HulaScript::instance& instance) const {
 	expect_type(HulaScript::instance::value::vtype::NUMBER, instance);
 	
 	if (data.number < min || data.number >= max) {
@@ -12,18 +12,18 @@ size_t HulaScript::instance::value::index(size_t min, size_t max, HulaScript::in
 		instance.panic(ss.str());
 	}
 
-	return static_cast<size_t>(data.number);
+	return static_cast<int64_t>(data.number);
 }
 
 HulaScript::instance::value matrix::get_elem(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
 	if (arguments.size() != 2) {
 		std::stringstream ss;
-		ss << "MatrixEplorer: Matrix get expected a row, and column. Got " << arguments.size() << " instead.";
+		ss << "MatrixEplorer: Matrix get expected a row, and column. Got " << arguments.size() << " argument(s) instead.";
 		instance.panic(ss.str());
 	}
 
-	size_t row = arguments[0].index(1, rows + 1, instance) - 1;
-	size_t col = arguments[1].index(1, cols + 1, instance) - 1;
+	int64_t row = arguments[0].index(1, rows + 1, instance) - 1;
+	int64_t col = arguments[1].index(1, cols + 1, instance) - 1;
 
 	return HulaScript::instance::value(elems[row * cols + col]);
 }
@@ -31,12 +31,12 @@ HulaScript::instance::value matrix::get_elem(std::vector<HulaScript::instance::v
 HulaScript::instance::value matrix::set_elem(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
 	if (arguments.size() != 3) {
 		std::stringstream ss;
-		ss << "MatrixEplorer: Matrix set expected a row, column, and element. Got " << arguments.size() << " instead.";
+		ss << "MatrixEplorer: Matrix set expected a row, column, and element. Got " << arguments.size() << " argument(s) instead.";
 		instance.panic(ss.str());
 	}
 
-	size_t row = arguments[0].index(1, rows + 1, instance) - 1;
-	size_t col = arguments[1].index(1, cols + 1, instance) - 1;
+	int64_t row = arguments[0].index(1, rows + 1, instance) - 1;
+	int64_t col = arguments[1].index(1, cols + 1, instance) - 1;
 
 	elems[row * cols + col] = arguments[2].number(instance);
 
@@ -47,10 +47,12 @@ HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& op
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
 		instance.panic("MatrixEplorer: You can only add a matrix with another matrix.");
+		return HulaScript::instance::value();
 	}
 
 	if (rows != mat_operand->rows || cols != mat_operand->cols) {
 		instance.panic("MatrixEplorer: You can only add a matrix with another matrix of the same dimensions.");
+		return HulaScript::instance::value();
 	}
 
 	std::vector<double> new_elems;
@@ -67,10 +69,12 @@ HulaScript::instance::value matrix::subtract_operator(HulaScript::instance::valu
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
 		instance.panic("MatrixEplorer: You can only subtract a matrix with another matrix.");
+		return HulaScript::instance::value();
 	}
 
 	if (rows != mat_operand->rows || cols != mat_operand->cols) {
 		instance.panic("MatrixEplorer: You can only subtract a matrix with another matrix of the same dimensions.");
+		return HulaScript::instance::value();
 	}
 
 	std::vector<double> new_elems;
@@ -87,6 +91,7 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
 		instance.panic("MatrixEplorer: You can only multiply a matrix with another matrix.");
+		return HulaScript::instance::value();
 	}
 
 	if (cols != mat_operand->rows) {
@@ -110,5 +115,68 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 		}
 	}
 
-	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, new_elems)));
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, mat_operand->cols, new_elems)));
+}
+
+HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance)
+{
+	std::vector<double> elems;
+	std::optional<size_t> common_vec_dim = std::nullopt;
+
+	for (auto& arg : arguments) {
+		matrix* arg_mat = dynamic_cast<matrix*>(arg.foreign_obj(instance));
+		if (arg_mat == NULL) {
+			instance.panic("Matrix Explorer: Expected argument(s) to all be matricies.");
+			return HulaScript::instance::value();
+		}
+		
+		auto dim = arg_mat->dims();
+		if (dim.second != 1) {
+			std::stringstream ss;
+			ss << "Matrix Explorer: Expected argument(s) to all be vectors/single column matricies.";
+			instance.panic(ss.str());
+		}
+
+		if (common_vec_dim.has_value()) {
+			if (dim.first != common_vec_dim.value()) {
+				std::stringstream ss;
+				ss << "Matrix Eplorer: Expected vector with " << common_vec_dim.value() << " elem(s), but got vector with " << dim.first << " elem(s) instead.";
+				instance.panic(ss.str());
+			}
+		}
+		else {
+			common_vec_dim = dim.first;
+		}
+	}
+}
+
+HulaScript::instance::value MatrixExplorer::make_vector(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
+	std::vector<double> elems;
+	elems.reserve(arguments.size());
+
+	for (auto& arg : arguments) {
+		elems.push_back(arg.number(instance));
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(elems.size(), 1, elems)));
+}
+
+HulaScript::instance::value MatrixExplorer::make_identity_mat(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
+	if (arguments.size() != 1) {
+		std::stringstream ss;
+		ss << "MatrixEplorer: identity expects dimension. Got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	int64_t dim = arguments[0].index(0, UINT64_MAX, instance);
+	
+	std::vector<double> elems;
+	elems.reserve(dim * dim);
+	for (size_t i = 0; i < dim; i++) {
+		for (size_t j = 0; j < dim; j++) {
+			elems.push_back(i == j ? 1 : 0);
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(dim, dim, elems)));
 }
