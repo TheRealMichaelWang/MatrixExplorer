@@ -11,7 +11,10 @@ std::string matrix::to_string() {
 			if (j != 0) {
 				ss << ", ";
 			}
-			ss << elems.get()[i * cols + j];
+
+			double elem = elems.get()[i * cols + j];
+			if (elem == 0) { ss << "0"; } //to handle negative zero
+			else { ss << elem; }
 		}
 		ss << "\n";
 	}

@@ -13,7 +13,7 @@ project ("MatrixExplorer")
 add_subdirectory(HulaScript)
 
 # Add source to this project's executable.
-add_executable (MatrixExplorer "MatrixExplorer.cpp" "matrix.h" "matrix.cpp" "print.cpp")
+add_executable (MatrixExplorer "MatrixExplorer.cpp" "matrix.h" "matrix.cpp" "print.cpp" "rows.cpp")
 set_property(TARGET MatrixExplorer PROPERTY CXX_STANDARD 20)
 set_property(TARGET MatrixExplorer PROPERTY CXX_STANDARD_REQUIRED ON)
 

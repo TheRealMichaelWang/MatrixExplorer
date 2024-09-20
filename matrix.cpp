@@ -92,6 +92,14 @@ HulaScript::instance::value MatrixExplorer::matrix::augment(std::vector<HulaScri
 	return instance.add_foreign_object(std::make_unique<matrix>(rows, new_cols, new_elems));
 }
 
+HulaScript::instance::value MatrixExplorer::matrix::reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	return instance.add_foreign_object(std::make_unique<matrix>(reduce()));
+}
+
+HulaScript::instance::value MatrixExplorer::matrix::row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
+}
+
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
