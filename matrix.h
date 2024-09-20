@@ -29,6 +29,8 @@ namespace MatrixExplorer {
 		const std::pair<size_t, size_t> dims() const noexcept {
 			return std::make_pair(rows, cols);
 		}
+
+		std::string to_string() override;
 	};
 
 	HulaScript::instance::value make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
