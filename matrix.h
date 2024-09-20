@@ -18,6 +18,9 @@ namespace MatrixExplorer {
 		HulaScript::instance::value set_elem(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 	
 		HulaScript::instance::value transpose(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value augment(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+
+
 	public:
 		matrix(size_t rows, size_t cols, std::vector<double> elems_vec) : rows(rows), cols(cols), elems(new double[elems_vec.size()]) {
 			assert(elems_vec.size() == rows * cols);
@@ -26,6 +29,7 @@ namespace MatrixExplorer {
 			declare_method("get", &matrix::get_elem);
 			declare_method("set", &matrix::set_elem);
 			declare_method("trans", &matrix::transpose);
+			declare_method("augment", &matrix::augment);
 		}
 
 		const std::pair<size_t, size_t> dims() const noexcept {

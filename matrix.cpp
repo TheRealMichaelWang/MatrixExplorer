@@ -55,6 +55,43 @@ HulaScript::instance::value matrix::transpose(std::vector<HulaScript::instance::
 	return instance.add_foreign_object(std::make_unique<matrix>(cols, rows, new_elems));
 }
 
+HulaScript::instance::value MatrixExplorer::matrix::augment(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance)
+{
+	if (arguments.size() != 1) {
+		std::stringstream ss;
+		ss << "Matrix Explorer: Matrix augment expects a matrix, got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	matrix* mat_operand = dynamic_cast<matrix*>(arguments[0].foreign_obj(instance));
+	if (mat_operand == NULL) {
+		instance.panic("MatrixEplorer: You can only augment a matrix with another matrix.");
+		return HulaScript::instance::value();
+	}
+
+	if (rows != mat_operand->rows) {
+		std::stringstream ss;
+		ss << "MatrixExplorer: Matrix augment expects a matrix with " << rows << " row(s), but got matrix with " << mat_operand->rows << " row(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	std::vector<double> new_elems;
+	size_t new_cols = cols + mat_operand->cols;
+	new_elems.reserve(rows * new_cols);
+
+	for (size_t i = 0; i < rows; i++)
+	{
+		for (size_t j = 0; j < cols; j++) {
+			new_elems.push_back(elems[i * cols + j]);
+		}
+		for (size_t j = 0; j < mat_operand->cols; j++) {
+			new_elems.push_back(mat_operand->elems[i * mat_operand->cols + j]);
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(rows, new_cols, new_elems));
+}
+
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {
