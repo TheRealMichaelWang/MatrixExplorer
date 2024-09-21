@@ -47,6 +47,7 @@ namespace HulaScript {
 				TABLE_IS_FINAL = 2,
 				TABLE_INHERITS_PARENT = 4,
 				TABLE_ARRAY_ITERATE = 8,
+				INVALID_CONSTANT = 16
 			};
 
 			uint16_t flags;
