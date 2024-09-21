@@ -25,6 +25,7 @@ namespace MatrixExplorer {
 
 		HulaScript::instance::value get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value get_left_square(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
 		//add one to get right elementary matrix
 
@@ -46,6 +47,7 @@ namespace MatrixExplorer {
 
 			declare_method("coef", &matrix::get_coefficient_matrix);
 			declare_method("sol", &matrix::get_solution_column);
+			declare_method("leftSq", &matrix::get_left_square);
 		}
 
 		const std::pair<size_t, size_t> dims() const noexcept {

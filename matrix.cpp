@@ -124,6 +124,22 @@ HulaScript::instance::value MatrixExplorer::matrix::get_solution_column(std::vec
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, 1, toret_elems)));
 }
 
+HulaScript::instance::value MatrixExplorer::matrix::get_left_square(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	if (cols < rows) {
+		instance.panic("Cannot get the left square if the matrix has fewer columns than rows (left square side length is equal to row count).");
+	}
+
+	std::vector<double> toret_elems;
+	toret_elems.reserve(rows * rows);
+	for (size_t i = 0; i < rows; i++) {
+		for (size_t j = rows; j < cols; j++) {
+			toret_elems.push_back(elems[i * cols + j]);
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, rows, toret_elems)));
+}
+
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {

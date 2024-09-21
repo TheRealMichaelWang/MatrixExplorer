@@ -159,6 +159,8 @@ namespace HulaScript {
 			virtual std::string to_string() { return "Untitled Foreign Object"; }
 
 			friend class instance;
+		public:
+			virtual ~foreign_object() = default;
 		};
 
 		std::variant<value, std::vector<compilation_error>, std::monostate> run(std::string source, std::optional<std::string> file_name, bool repl_mode = true, bool ignore_warnings=false);

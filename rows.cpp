@@ -53,7 +53,7 @@ matrix matrix::reduce() {
 matrix matrix::row_reduce() {
 	matrix reduced = reduce();
 
-	for (size_t i = 0; i < reduced.cols; i++) {
+	for (size_t i = 0; i < std::min(reduced.rows, reduced.cols); i++) {
 		double elem = reduced.elems[i * cols + i];
 		if (elem != 0) {
 			reduced.scale_row(i, 1 / elem);
