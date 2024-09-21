@@ -47,7 +47,9 @@ void instance::compile_for_loop(compilation_context& context) {
 		compile_statement(context);
 	}
 	context.set_operand(context.emit({ .operation = opcode::JUMP_BACK }), context.current_ip() - continue_dest_ip);
+	size_t break_begin_ip = context.current_ip();
 	auto scope = unwind_lexical_scope(context);
+	break_begin_ip += scope.final_ins_offset;
 	for (auto continue_request : scope.continue_requests) {
 		context.set_instruction(continue_request + scope.final_ins_offset, opcode::JUMP_BACK, continue_request - continue_dest_ip);
 	}
@@ -60,13 +62,13 @@ void instance::compile_for_loop(compilation_context& context) {
 
 		compile_block(context);
 		context.tokenizer.scan_token();
-		context.set_operand(jump_end_ins_addr + scope.final_ins_offset, context.current_ip() - (jump_end_ins_addr + +scope.final_ins_offset));
+		context.set_operand(jump_end_ins_addr + scope.final_ins_offset, context.current_ip() - (jump_end_ins_addr + scope.final_ins_offset));
 	}
 	else {
 		context.tokenizer.scan_token();
-		context.set_operand(jump_end_ins_addr + scope.final_ins_offset, context.current_ip() - (jump_end_ins_addr + scope.final_ins_offset));
+		context.set_operand(jump_end_ins_addr + scope.final_ins_offset, break_begin_ip - (jump_end_ins_addr + scope.final_ins_offset));
 		for (auto break_request : scope.break_requests) {
-			context.set_operand(break_request + scope.final_ins_offset, context.current_ip() - (break_request + scope.final_ins_offset));
+			context.set_operand(break_request + scope.final_ins_offset, break_begin_ip - (break_request + scope.final_ins_offset));
 		}
 	}
 }

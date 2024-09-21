@@ -1,0 +1,15 @@
+function polyCoefs(terms)
+    m = zero(terms, terms)
+    for i in irange(1, terms + 1) do
+            for j in irange(1, terms + 1) do
+                    m.set(i, j, i^j)
+            end
+    end
+    return m
+end
+
+for i in irange(10) do
+    for j in irange(10) do
+        print(i * j)
+    end
+end

@@ -271,7 +271,7 @@ HulaScript::instance::value MatrixExplorer::make_vector(std::vector<HulaScript::
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(elems.size(), 1, elems)));
 }
 
-HulaScript::instance::value MatrixExplorer::make_identity_mat(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
+HulaScript::instance::value MatrixExplorer::make_identity_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
 	if (arguments.size() != 1) {
 		std::stringstream ss;
 		ss << "MatrixEplorer: identity expects dimension. Got " << arguments.size() << " argument(s) instead.";
@@ -289,4 +289,18 @@ HulaScript::instance::value MatrixExplorer::make_identity_mat(std::vector<HulaSc
 	}
 
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(dim, dim, elems)));
+}
+
+HulaScript::instance::value MatrixExplorer::make_zero_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
+	if (arguments.size() != 2) {
+		std::stringstream ss;
+		ss << "MatrixEplorer: Matrix get expected a row, and column. Got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	size_t rows = arguments[0].index(0, INT64_MAX, instance);
+	size_t cols = arguments[0].index(0, INT64_MAX, instance);
+
+	std::vector<double> elems(rows * cols, 0);
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, elems)));
 }

@@ -66,5 +66,6 @@ namespace MatrixExplorer {
 
 	HulaScript::instance::value make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
 	HulaScript::instance::value make_vector(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
-	HulaScript::instance::value make_identity_mat(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
+	HulaScript::instance::value make_identity_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
+	HulaScript::instance::value make_zero_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
 }
