@@ -299,7 +299,7 @@ HulaScript::instance::value MatrixExplorer::make_zero_matrix(std::vector<HulaScr
 	}
 
 	size_t rows = arguments[0].index(0, INT64_MAX, instance);
-	size_t cols = arguments[0].index(0, INT64_MAX, instance);
+	size_t cols = arguments[1].index(0, INT64_MAX, instance);
 
 	std::vector<double> elems(rows * cols, 0);
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, elems)));
