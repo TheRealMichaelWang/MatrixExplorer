@@ -145,3 +145,47 @@ bool MatrixExplorer::matrix::is_row_equivalent(const matrix& other) const noexce
 	}
 	return true;
 }
+
+matrix MatrixExplorer::matrix::get_row_vec(size_t index) {
+	std::vector<double> elems;
+	elems.reserve(cols);
+
+	for (size_t i = 0; i < cols; i++) {
+		elems.push_back(elems[index * cols + i]);
+	}
+
+	return matrix(1, cols, elems);
+}
+
+matrix MatrixExplorer::matrix::get_col_vec(size_t index) {
+	std::vector<double> elems;
+	elems.reserve(rows);
+
+	for (size_t i = 0; i < rows; i++) {
+		elems.push_back(elems[i * cols + index]);
+	}
+
+	return matrix(rows, 1, elems);
+}
+
+std::vector<matrix> MatrixExplorer::matrix::get_rows() {
+	std::vector<matrix> row_vecs;
+	row_vecs.reserve(rows);
+
+	for (size_t i = 0; i < rows; i++) {
+		row_vecs.push_back(get_row_vec(i));
+	}
+
+	return row_vecs;
+}
+
+std::vector<matrix> MatrixExplorer::matrix::get_cols() {
+	std::vector<matrix> col_vecs;
+	col_vecs.reserve(cols);
+
+	for (size_t i = 0; i < cols; i++) {
+		col_vecs.push_back(get_col_vec(i));
+	}
+
+	return col_vecs;
+}

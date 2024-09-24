@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <vector>
 #include "ffi.h"
 
 namespace MatrixExplorer {
@@ -86,6 +87,12 @@ namespace MatrixExplorer {
 		bool is_rref() const noexcept;
 
 		bool is_row_equivalent(const matrix& other) const noexcept;
+
+		matrix get_row_vec(size_t i);
+		matrix get_col_vec(size_t i);
+
+		std::vector<matrix> get_rows();
+		std::vector<matrix> get_cols();
 	};
 
 	HulaScript::instance::value make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
