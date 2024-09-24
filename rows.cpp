@@ -151,7 +151,7 @@ matrix MatrixExplorer::matrix::get_row_vec(size_t index) {
 	elems.reserve(cols);
 
 	for (size_t i = 0; i < cols; i++) {
-		elems.push_back(elems[index * cols + i]);
+		elems.push_back(this->elems[index * cols + i]);
 	}
 
 	return matrix(1, cols, elems);
@@ -162,7 +162,7 @@ matrix MatrixExplorer::matrix::get_col_vec(size_t index) {
 	elems.reserve(rows);
 
 	for (size_t i = 0; i < rows; i++) {
-		elems.push_back(elems[i * cols + index]);
+		elems.push_back(this->elems[i * cols + index]);
 	}
 
 	return matrix(rows, 1, elems);

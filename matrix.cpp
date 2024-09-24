@@ -108,6 +108,54 @@ HulaScript::instance::value MatrixExplorer::matrix::is_row_equivalent(std::vecto
 	return is_row_equivalent(*mat_operand);
 }
 
+HulaScript::instance::value MatrixExplorer::matrix::get_row_vec(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	if (arguments.size() != 1) {
+		std::stringstream ss;
+		ss << "Matrix Explorer: Matrix rowAt expects a row index, got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	size_t index = arguments[0].index(1, rows + 1, instance);
+	return instance.add_foreign_object(std::make_unique<matrix>(get_row_vec(index - 1)));
+}
+
+HulaScript::instance::value MatrixExplorer::matrix::get_col_vec(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	if (arguments.size() != 1) {
+		std::stringstream ss;
+		ss << "Matrix Explorer: Matrix colAt expects a col index, got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	size_t index = arguments[0].index(1, cols + 1, instance);
+	return instance.add_foreign_object(std::make_unique<matrix>(get_col_vec(index - 1)));
+}
+
+HulaScript::instance::value MatrixExplorer::matrix::get_rows(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	auto row_vecs = get_rows();
+	
+	std::vector<HulaScript::instance::value> elems;
+	elems.reserve(row_vecs.size());
+
+	for (auto& row_vec : row_vecs) {
+		elems.push_back(instance.add_foreign_object(std::make_unique<matrix>(std::move(row_vec))));
+	}
+
+	return instance.make_array(elems);
+}
+
+HulaScript::instance::value MatrixExplorer::matrix::get_cols(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	auto col_vecs = get_cols();
+
+	std::vector<HulaScript::instance::value> elems;
+	elems.reserve(col_vecs.size());
+
+	for (auto& row_vec : col_vecs) {
+		elems.push_back(instance.add_foreign_object(std::make_unique<matrix>(std::move(row_vec))));
+	}
+
+	return instance.make_array(elems);
+}
+
 HulaScript::instance::value MatrixExplorer::matrix::get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
 	std::vector<double> toret_elems;
 	toret_elems.reserve(rows * (cols - 1));

@@ -36,6 +36,11 @@ namespace MatrixExplorer {
 		}
 		HulaScript::instance::value is_row_equivalent(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
+		HulaScript::instance::value get_row_vec(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value get_col_vec(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value get_rows(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value get_cols(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+
 		HulaScript::instance::value get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value get_left_square(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
@@ -63,6 +68,11 @@ namespace MatrixExplorer {
 			declare_method("isRef", &matrix::is_reduced_echelon_form);
 			declare_method("isRref", &matrix::is_row_reduced_echelon_form);
 			declare_method("isRowEquiv", &matrix::is_row_equivalent);
+
+			declare_method("rowAt", &matrix::get_row_vec);
+			declare_method("colAt", &matrix::get_col_vec);
+			declare_method("rows", &matrix::get_rows);
+			declare_method("cols", &matrix::get_cols);
 
 			declare_method("dim", &matrix::get_dimensions);
 			declare_method("coef", &matrix::get_coefficient_matrix);

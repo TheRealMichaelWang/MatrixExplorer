@@ -194,12 +194,25 @@ namespace HulaScript {
 			return value(res.first->get());
 		}
 
-		value make_table_obj(std::vector<std::pair<std::string, value>> elems, bool is_final=false) {
+		value make_table_obj(const std::vector<std::pair<std::string, value>>& elems, bool is_final=false) {
 			size_t table_id = allocate_table(elems.size(), false);
 			table& table = tables.at(table_id);
 			for (size_t i = 0; i < elems.size(); i++) {
 				table.key_hashes.insert({ Hash::dj2b(elems[i].first.c_str()), i });
 				heap[table.block.start + i] = elems[i].second;
+			}
+			table.count = elems.size();
+
+			return value(value::vtype::TABLE, is_final ? value::flags::NONE : value::flags::TABLE_IS_FINAL, 0, table_id);
+		}
+
+		value make_array(const std::vector<value>& elems, bool is_final = false) {
+			size_t table_id = allocate_table(elems.size(), false);
+			table& table = tables.at(table_id);
+			for (size_t i = 0; i < elems.size(); i++) {
+				value index_val(static_cast<double>(i));
+				table.key_hashes.insert({ index_val.hash(), i });
+				heap[table.block.start + i] = elems[i];
 			}
 			table.count = elems.size();
 
