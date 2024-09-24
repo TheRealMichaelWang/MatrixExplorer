@@ -22,7 +22,7 @@ void matrix::subtract_rows(size_t subtract_from, size_t how_much, double scale) 
 	}
 }
 
-matrix matrix::reduce() {
+matrix matrix::reduce() const noexcept {
 	std::vector<double> new_elems(elems.get(), elems.get() + (rows * cols));
 	matrix mat(rows, cols, new_elems);
 
@@ -50,7 +50,7 @@ matrix matrix::reduce() {
 	return mat;
 }
 
-matrix matrix::row_reduce() {
+matrix matrix::row_reduce() const noexcept {
 	matrix reduced = reduce();
 
 	for (size_t i = 0; i < std::min(reduced.rows, reduced.cols); i++) {
@@ -70,14 +70,14 @@ matrix matrix::row_reduce() {
 	return reduced;
 }
 
-HulaScript::instance::value matrix::is_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+bool matrix::is_ref() const noexcept {
 	std::optional<size_t> last_pivot_pos = std::nullopt;
 	for (size_t i = 0; i < rows; i++) {
 		bool found_pivot = false;
 		for (size_t j = 0; j < cols; j++) {
-			if (elems[i*cols + j] != 0) { //potential pivot detected
+			if (elems[i * cols + j] != 0) { //potential pivot detected
 				if (last_pivot_pos.has_value() && j <= last_pivot_pos.value()) {
-					return HulaScript::instance::value(false);
+					return false;
 				}
 				last_pivot_pos = j;
 				found_pivot = true;
@@ -89,22 +89,21 @@ HulaScript::instance::value matrix::is_reduced_echelon_form(std::vector<HulaScri
 			last_pivot_pos = cols;
 		}
 	}
-
-	return HulaScript::instance::value(true);
+	return true;
 }
 
-HulaScript::instance::value matrix::is_row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+bool matrix::is_rref() const noexcept {
 	std::optional<size_t> last_pivot_pos = std::nullopt;
 	for (size_t i = 0; i < rows; i++) {
 		bool found_pivot = false;
 		for (size_t j = 0; j < cols; j++) {
 			if (elems[i * cols + j] != 0) { //potential pivot detected
 				if (elems[i * cols + j] != 1) {
-					return HulaScript::instance::value(false);
+					return false;
 				}
 
 				if (last_pivot_pos.has_value() && j <= last_pivot_pos.value()) {
-					return HulaScript::instance::value(false);
+					return false;
 				}
 				last_pivot_pos = j;
 				found_pivot = true;
@@ -112,7 +111,7 @@ HulaScript::instance::value matrix::is_row_reduced_echelon_form(std::vector<Hula
 				if (i > 0) {
 					for (size_t k = 0; k < i - 1; k++) {
 						if (elems[k * cols + j] != 0) {
-							return HulaScript::instance::value(false);
+							return false;
 						}
 					}
 				}
@@ -126,5 +125,23 @@ HulaScript::instance::value matrix::is_row_reduced_echelon_form(std::vector<Hula
 		}
 	}
 
-	return HulaScript::instance::value(true);
+	return true;
+}
+
+bool MatrixExplorer::matrix::is_row_equivalent(const matrix& other) const noexcept {
+	if (cols != other.cols || rows != other.rows) {
+		return false;
+	}
+
+	matrix my_rref = row_reduce();
+	matrix other_rref = other.row_reduce();
+
+	for (size_t i = 0; i < rows; i++) {
+		for (size_t j = 0; j < cols; j++) {
+			if (my_rref.elems[i * cols + j] != other_rref.elems[i * cols + j]) {
+				return false;
+			}
+		}
+	}
+	return true;
 }

@@ -92,13 +92,21 @@ HulaScript::instance::value MatrixExplorer::matrix::augment(std::vector<HulaScri
 	return instance.add_foreign_object(std::make_unique<matrix>(rows, new_cols, new_elems));
 }
 
-//HulaScript::instance::value MatrixExplorer::matrix::reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-//	return instance.add_foreign_object(std::make_unique<matrix>(reduce()));
-//}
-//
-//HulaScript::instance::value MatrixExplorer::matrix::row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-//	return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
-//}
+HulaScript::instance::value MatrixExplorer::matrix::is_row_equivalent(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	if (arguments.size() != 1) {
+		std::stringstream ss;
+		ss << "Matrix Explorer: Matrix isRowEquiv expects a matrix, got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	matrix* mat_operand = dynamic_cast<matrix*>(arguments[0].foreign_obj(instance));
+	if (mat_operand == NULL) {
+		instance.panic("MatrixEplorer: You can only determine row equivalence of a matrix with another matrix.");
+		return HulaScript::instance::value();
+	}
+
+	return is_row_equivalent(*mat_operand);
+}
 
 HulaScript::instance::value MatrixExplorer::matrix::get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
 	std::vector<double> toret_elems;

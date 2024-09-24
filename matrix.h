@@ -27,8 +27,13 @@ namespace MatrixExplorer {
 			return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
 		}
 
-		HulaScript::instance::value is_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
-		HulaScript::instance::value is_row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value is_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+			return HulaScript::instance::value(is_ref());
+		}
+		HulaScript::instance::value is_row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+			return HulaScript::instance::value(is_rref());
+		}
+		HulaScript::instance::value is_row_equivalent(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
 		HulaScript::instance::value get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
@@ -56,6 +61,7 @@ namespace MatrixExplorer {
 			declare_method("rref", &matrix::row_reduced_echelon_form);
 			declare_method("isRef", &matrix::is_reduced_echelon_form);
 			declare_method("isRref", &matrix::is_row_reduced_echelon_form);
+			declare_method("isRowEquiv", &matrix::is_row_equivalent);
 
 			declare_method("dim", &matrix::get_dimensions);
 			declare_method("coef", &matrix::get_coefficient_matrix);
@@ -73,13 +79,13 @@ namespace MatrixExplorer {
 
 		std::string to_string() override;
 
-		matrix row_reduce();
-		matrix reduce();
+		matrix row_reduce() const noexcept;
+		matrix reduce() const noexcept;
 
-		bool is_ref();
-		bool is_rref();
+		bool is_ref() const noexcept;
+		bool is_rref() const noexcept;
 
-		bool is_row_equivalent(matrix other);
+		bool is_row_equivalent(const matrix& other) const noexcept;
 	};
 
 	HulaScript::instance::value make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);
