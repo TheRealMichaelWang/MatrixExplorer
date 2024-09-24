@@ -20,12 +20,21 @@ namespace MatrixExplorer {
 		HulaScript::instance::value transpose(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value augment(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		
-		HulaScript::instance::value reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
-		HulaScript::instance::value row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+			return instance.add_foreign_object(std::make_unique<matrix>(reduce()));
+		}
+		HulaScript::instance::value row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+			return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
+		}
+
+		HulaScript::instance::value is_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value is_row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
 		HulaScript::instance::value get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 		HulaScript::instance::value get_left_square(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+
+		HulaScript::instance::value get_dimensions(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
 		//add one to get right elementary matrix
 
@@ -42,9 +51,13 @@ namespace MatrixExplorer {
 			declare_method("set", &matrix::set_elem);
 			declare_method("trans", &matrix::transpose);
 			declare_method("augment", &matrix::augment);
+
 			declare_method("ref", &matrix::reduced_echelon_form);
 			declare_method("rref", &matrix::row_reduced_echelon_form);
+			declare_method("isRef", &matrix::is_reduced_echelon_form);
+			declare_method("isRref", &matrix::is_row_reduced_echelon_form);
 
+			declare_method("dim", &matrix::get_dimensions);
 			declare_method("coef", &matrix::get_coefficient_matrix);
 			declare_method("sol", &matrix::get_solution_column);
 			declare_method("leftSq", &matrix::get_left_square);
@@ -62,6 +75,11 @@ namespace MatrixExplorer {
 
 		matrix row_reduce();
 		matrix reduce();
+
+		bool is_ref();
+		bool is_rref();
+
+		bool is_row_equivalent(matrix other);
 	};
 
 	HulaScript::instance::value make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance);

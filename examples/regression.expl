@@ -7,17 +7,3 @@ function polyCoefs(terms)
     end
     return m
 end
-
-for i in irange(10) do
-    for j in irange(10) do
-        print(i * j)
-    end
-end
-
-for i in irange(10) do
-    if i == 5 then
-           break
-    end
-else
-    print("BROKEN!")
-end

@@ -92,13 +92,13 @@ HulaScript::instance::value MatrixExplorer::matrix::augment(std::vector<HulaScri
 	return instance.add_foreign_object(std::make_unique<matrix>(rows, new_cols, new_elems));
 }
 
-HulaScript::instance::value MatrixExplorer::matrix::reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-	return instance.add_foreign_object(std::make_unique<matrix>(reduce()));
-}
-
-HulaScript::instance::value MatrixExplorer::matrix::row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-	return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
-}
+//HulaScript::instance::value MatrixExplorer::matrix::reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+//	return instance.add_foreign_object(std::make_unique<matrix>(reduce()));
+//}
+//
+//HulaScript::instance::value MatrixExplorer::matrix::row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+//	return instance.add_foreign_object(std::make_unique<matrix>(row_reduce()));
+//}
 
 HulaScript::instance::value MatrixExplorer::matrix::get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
 	std::vector<double> toret_elems;
@@ -138,6 +138,16 @@ HulaScript::instance::value MatrixExplorer::matrix::get_left_square(std::vector<
 	}
 
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, rows, toret_elems)));
+}
+
+HulaScript::instance::value MatrixExplorer::matrix::get_dimensions(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	std::vector<std::pair<std::string, HulaScript::instance::value>> elems;
+	elems.reserve(2);
+
+	elems.push_back({ "rows", HulaScript::instance::value(static_cast<double>(rows)) });
+	elems.push_back({ "cols", HulaScript::instance::value(static_cast<double>(cols)) });
+
+	return instance.make_table_obj(elems, true);
 }
 
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {

@@ -69,3 +69,62 @@ matrix matrix::row_reduce() {
 
 	return reduced;
 }
+
+HulaScript::instance::value matrix::is_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	std::optional<size_t> last_pivot_pos = std::nullopt;
+	for (size_t i = 0; i < rows; i++) {
+		bool found_pivot = false;
+		for (size_t j = 0; j < cols; j++) {
+			if (elems[i*cols + j] != 0) { //potential pivot detected
+				if (last_pivot_pos.has_value() && j <= last_pivot_pos.value()) {
+					return HulaScript::instance::value(false);
+				}
+				last_pivot_pos = j;
+				found_pivot = true;
+				break;
+			}
+		}
+
+		if (!found_pivot) {
+			last_pivot_pos = cols;
+		}
+	}
+
+	return HulaScript::instance::value(true);
+}
+
+HulaScript::instance::value matrix::is_row_reduced_echelon_form(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	std::optional<size_t> last_pivot_pos = std::nullopt;
+	for (size_t i = 0; i < rows; i++) {
+		bool found_pivot = false;
+		for (size_t j = 0; j < cols; j++) {
+			if (elems[i * cols + j] != 0) { //potential pivot detected
+				if (elems[i * cols + j] != 1) {
+					return HulaScript::instance::value(false);
+				}
+
+				if (last_pivot_pos.has_value() && j <= last_pivot_pos.value()) {
+					return HulaScript::instance::value(false);
+				}
+				last_pivot_pos = j;
+				found_pivot = true;
+
+				if (i > 0) {
+					for (size_t k = 0; k < i - 1; k++) {
+						if (elems[k * cols + j] != 0) {
+							return HulaScript::instance::value(false);
+						}
+					}
+				}
+
+				break;
+			}
+		}
+
+		if (!found_pivot) {
+			last_pivot_pos = cols;
+		}
+	}
+
+	return HulaScript::instance::value(true);
+}
