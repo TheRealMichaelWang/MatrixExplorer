@@ -206,6 +206,28 @@ HulaScript::instance::value MatrixExplorer::matrix::get_dimensions(std::vector<H
 	return instance.make_table_obj(elems, true);
 }
 
+HulaScript::instance::value MatrixExplorer::matrix::get_sub_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
+	if (arguments.size() != 4) {
+		std::stringstream ss;
+		ss << "Matrix Explorer: Matrix subMat expects a row index, col index, row size, and col size, got " << arguments.size() << " argument(s) instead.";
+		instance.panic(ss.str());
+	}
+
+	size_t row_index = arguments[0].index(1, rows + 1, instance) - 1;
+	size_t col_index = arguments[1].index(1, cols + 1, instance) - 1;
+	size_t row_size = arguments[2].index(0, (rows - row_index) + 1, instance);
+	size_t col_size = arguments[3].index(0, (cols - col_index) + 1, instance);
+
+	std::vector<double> elems;
+	for (size_t i = 0; i < row_size; i++) {
+		for (size_t j = 0; j < col_size; j++) {
+			elems.push_back(this->elems[(row_index + i) * cols + (col_index + j)]);
+		}
+	}
+
+	return instance.add_foreign_object(std::make_unique<matrix>(matrix(row_size, col_size, elems)));
+}
+
 HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) {
 	matrix* mat_operand = dynamic_cast<matrix*>(operand.foreign_obj(instance));
 	if (mat_operand == NULL) {

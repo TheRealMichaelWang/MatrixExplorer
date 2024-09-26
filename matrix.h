@@ -46,6 +46,7 @@ namespace MatrixExplorer {
 		HulaScript::instance::value get_left_square(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
 		HulaScript::instance::value get_dimensions(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
+		HulaScript::instance::value get_sub_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance);
 
 		//add one to get right elementary matrix
 
@@ -62,6 +63,7 @@ namespace MatrixExplorer {
 			declare_method("set", &matrix::set_elem);
 			declare_method("trans", &matrix::transpose);
 			declare_method("augment", &matrix::augment);
+			declare_method("subMat", &matrix::get_sub_matrix);
 
 			declare_method("ref", &matrix::reduced_echelon_form);
 			declare_method("rref", &matrix::row_reduced_echelon_form);
