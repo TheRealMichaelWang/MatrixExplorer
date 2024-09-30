@@ -11,6 +11,7 @@ target_sources(${PROJECT_NAME}
 		"src/compiler.cpp"
 		"src/for_loops.cpp"
 		"src/fstdlib.cpp"
+		"src/ffi_table_helper.cpp"
 		"src/garbage_collector.cpp"
 		"src/interpreter.cpp"
 		"src/print.cpp"

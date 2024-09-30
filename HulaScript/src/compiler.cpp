@@ -212,6 +212,9 @@ void instance::compile_value(compilation_context& context, bool expects_statemen
 			if (declared && expects_value) {
 				context.panic("Syntax Error: Cannot declare variable outside a statement.");
 			}
+			else if (!declared && expects_statement) {
+				context.emit({ .operation = opcode::DISCARD_TOP });
+			}
 
 			context.unset_src_loc();
 			return;
@@ -463,7 +466,7 @@ void instance::compile_expression(compilation_context& context, int min_prec, bo
 			context.set_operand(cond_addr, context.current_ip() - cond_addr);
 		}
 		else {
-			compile_expression(context, op_precs[op_type]);
+			compile_expression(context, op_precs[(op_type - token_type::PLUS)]);
 			context.emit({ .operation = static_cast<opcode>((op_type - token_type::PLUS) + opcode::ADD) });
 		}
 	}
@@ -494,7 +497,7 @@ void instance::compile_statement(compilation_context& context, bool expects_stat
 		for (size_t break_req_ip : lexical_scope.break_requests) {
 			context.set_operand(break_req_ip + lexical_scope.final_ins_offset, context.current_ip() - (break_req_ip + lexical_scope.final_ins_offset));
 		}
-		context.set_operand(cond_ip + lexical_scope.final_ins_offset, context.current_ip() - (cond_ip + lexical_scope.final_ins_offset));
+		context.set_operand(cond_ip, context.current_ip() - cond_ip);
 
 		break;
 	}
@@ -512,7 +515,7 @@ void instance::compile_statement(compilation_context& context, bool expects_stat
 			context.set_instruction(continue_req_ip + lexical_scope.final_ins_offset, opcode::JUMP_AHEAD, context.current_ip() - (continue_req_ip + lexical_scope.final_ins_offset));
 		}
 		compile_expression(context); 
-		context.emit({ .operation = opcode::IF_TRUE_JUMP_BACK, .operand = static_cast<operand>(context.current_ip() - repeat_dest_ip) });
+		context.emit({ .operation = opcode::IF_FALSE_JUMP_BACK, .operand = static_cast<operand>(context.current_ip() - repeat_dest_ip) });
 		for (size_t break_req_ip : lexical_scope.break_requests) {
 			context.set_operand(break_req_ip + lexical_scope.final_ins_offset, context.current_ip() - (break_req_ip + lexical_scope.final_ins_offset));
 		}
@@ -797,7 +800,7 @@ uint32_t instance::emit_finalize_function(compilation_context& context) {
 	}
 	else {
 		id = availible_function_ids.back();
-		availible_table_ids.pop_back();
+		availible_function_ids.pop_back();
 	}
 	functions.insert({ id, function });
 

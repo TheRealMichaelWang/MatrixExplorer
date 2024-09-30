@@ -112,8 +112,25 @@ void instance::execute() {
 					evaluation_stack.push_back(value(static_cast<double>(table.count)));
 					break;
 				}
-				else if (hash == Hash::dj2b("iterator") && flags & value::flags::TABLE_ARRAY_ITERATE) {
-					evaluation_stack.push_back(value(value::vtype::INTERNAL_LAZY_TABLE_ITERATOR, 0, 0, table_id));
+				else if (flags & value::flags::TABLE_ARRAY_ITERATE) {
+					switch (hash)
+					{
+					case Hash::dj2b("iterator"):
+						evaluation_stack.push_back(value(value::vtype::INTERNAL_TABLE_GET_ITERATOR, flags, 0, table_id));
+						break;
+					case Hash::dj2b("filter"):
+						evaluation_stack.push_back(value(value::vtype::INTERNAL_TABLE_FILTER, flags, 0, table_id));
+						break;
+					case Hash::dj2b("append"):
+						evaluation_stack.push_back(value(value::vtype::INTERNAL_TABLE_APPEND, flags, 0, table_id));
+						break;
+					case Hash::dj2b("appendRange"):
+						evaluation_stack.push_back(value(value::vtype::INTERNAL_TABLE_APPEND_RANGE, flags, 0, table_id));
+						break;
+					default:
+						evaluation_stack.push_back(value());
+						break;
+					}
 					break;
 				}
 				else if(flags & value::flags::TABLE_INHERITS_PARENT) {
@@ -322,12 +339,12 @@ void instance::execute() {
 		case opcode::JUMP_AHEAD:
 			ip += ins.operand;
 			continue;
-		case opcode::IF_TRUE_JUMP_BACK: {
+		case opcode::IF_FALSE_JUMP_BACK: {
 			expect_type(value::vtype::BOOLEAN);
 			bool cond = evaluation_stack.back().data.boolean;
 			evaluation_stack.pop_back();
 
-			if (cond) {
+			if (!cond) {
 				break;
 			}
 		}
@@ -377,12 +394,47 @@ void instance::execute() {
 
 				break;
 			}
-			case value::vtype::INTERNAL_LAZY_TABLE_ITERATOR: {
+			case value::vtype::INTERNAL_TABLE_GET_ITERATOR: {
 				if (ins.operand != 0) {
 					panic("Array table iterator expects precisley 0 arguments.");
 				}
 				
-				evaluation_stack.push_back(add_foreign_object(std::make_unique<table_iterator>(table_iterator(call_value, *this))));
+				evaluation_stack.push_back(add_foreign_object(std::make_unique<table_iterator>(table_iterator(value(value::vtype::TABLE, call_value.flags, 0, call_value.data.id), *this))));
+				break;
+			}
+			case value::vtype::INTERNAL_TABLE_FILTER: {
+				if (ins.operand != 1) {
+					panic("Array filter expects 1 argument, filter function.");
+				}
+
+				value arguments = locals.back();
+				locals.pop_back();
+
+				evaluation_stack.push_back(filter_table(value(value::vtype::TABLE, call_value.flags, 0, call_value.data.id), arguments, *this));
+				break;
+			}
+			case value::vtype::INTERNAL_TABLE_APPEND: {
+				if (ins.operand != 1) {
+					panic("Array append expects 1 argument, filter function.");
+				}
+
+				value arguments = locals.back();
+				locals.pop_back();
+
+				evaluation_stack.push_back(append_table(value(value::vtype::TABLE, call_value.flags, 0, call_value.data.id), arguments, *this));
+
+				break;
+			}
+			case value::vtype::INTERNAL_TABLE_APPEND_RANGE: {
+				if (ins.operand != 1) {
+					panic("Array append expects 1 argument, filter function.");
+				}
+
+				value arguments = locals.back();
+				locals.pop_back();
+
+				evaluation_stack.push_back(append_range(value(value::vtype::TABLE, call_value.flags, 0, call_value.data.id), arguments, *this));
+
 				break;
 			}
 			default:
@@ -444,4 +496,22 @@ void instance::execute() {
 
 		ip++;
 	}
+}
+
+void HulaScript::instance::execute_arbitrary(const std::vector<instruction>& arbitrary_ins) {
+	size_t start_ip = instructions.size();
+	size_t old_ip = ip;
+	instructions.insert(instructions.end(), arbitrary_ins.begin(), arbitrary_ins.end());
+
+	auto src_loc = src_from_ip(old_ip);
+	if (src_loc.has_value()) {
+		ip_src_map.insert({ start_ip, src_loc.value() });
+	}
+
+	ip = start_ip;
+	execute();
+
+	for (auto it = ip_src_map.lower_bound(start_ip); it != ip_src_map.end(); it = ip_src_map.erase(it)) { }
+	instructions.erase(instructions.begin() + start_ip, instructions.end());
+	ip = old_ip;
 }

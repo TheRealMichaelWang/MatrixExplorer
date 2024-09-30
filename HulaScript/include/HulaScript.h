@@ -36,7 +36,11 @@ namespace HulaScript {
 				FOREIGN_OBJECT_METHOD,
 				FOREIGN_FUNCTION,
 				INTERNAL_STRHASH,
-				INTERNAL_LAZY_TABLE_ITERATOR
+
+				INTERNAL_TABLE_GET_ITERATOR,
+				INTERNAL_TABLE_FILTER,
+				INTERNAL_TABLE_APPEND,
+				INTERNAL_TABLE_APPEND_RANGE
 			};
 		private:
 			vtype type;
@@ -81,17 +85,17 @@ namespace HulaScript {
 				return data.number;
 			}
 
+			bool boolean(instance& instance) const {
+				expect_type(vtype::BOOLEAN, instance);
+				return data.boolean;
+			}
+
 			foreign_object* foreign_obj(instance& instance) const {
 				expect_type(vtype::FOREIGN_OBJECT, instance);
 				return data.foreign_object;
 			}
 
-			int64_t index(int64_t min, int64_t max, instance& instance) const;
-
-			bool boolean(instance& instance) const {
-				expect_type(vtype::BOOLEAN, instance);
-				return data.boolean;
-			}
+			const int64_t index(int64_t min, int64_t max, instance& instance) const;
 
 			const constexpr size_t hash() const noexcept {
 				size_t payload = 0;
@@ -109,7 +113,7 @@ namespace HulaScript {
 					[[fallthrough]];
 				case vtype::FOREIGN_OBJECT:
 					[[fallthrough]];
-				case vtype::INTERNAL_LAZY_TABLE_ITERATOR:
+				case vtype::INTERNAL_TABLE_GET_ITERATOR:
 					[[fallthrough]];
 				case vtype::NUMBER:
 					payload = data.id;
@@ -136,7 +140,11 @@ namespace HulaScript {
 
 			void expect_type(vtype expected_type, const instance& instance) const;
 
-			friend class table_iterator;
+			const bool check_type(vtype is_type) const noexcept {
+				return type == is_type;
+			}
+
+			friend class ffi_table_helper;
 		};
 
 		class foreign_object {
@@ -219,6 +227,9 @@ namespace HulaScript {
 			return value(value::vtype::TABLE, is_final ? value::flags::NONE : value::flags::TABLE_IS_FINAL, 0, table_id);
 		}
 
+		value invoke_value(value to_call, std::vector<value> arguments);
+		value invoke_method(value object, std::string method_name, std::vector<value> arguments);
+
 		bool declare_global(std::string name, value val) {
 			size_t hash = Hash::dj2b(name.c_str());
 			if (global_vars.size() > UINT8_MAX) {
@@ -254,7 +265,7 @@ namespace HulaScript {
 
 		using operand = uint8_t;
 		typedef void (instance::*operator_handler)(value& a, value& b);
-
+		
 		enum opcode : uint8_t {
 			DECL_LOCAL,
 			DECL_TOPLVL_LOCAL,
@@ -307,7 +318,7 @@ namespace HulaScript {
 			JUMP_AHEAD,
 			JUMP_BACK,
 			IF_FALSE_JUMP_AHEAD,
-			IF_TRUE_JUMP_BACK,
+			IF_FALSE_JUMP_BACK,
 
 			CALL,
 			CALL_LABEL,
@@ -363,7 +374,14 @@ namespace HulaScript {
 		void handle_string_add(value& a, value& b);
 
 		void handle_table_add(value& a, value& b);
+		void handle_table_repeat(value& a, value& b);
+		void handle_table_subtract(value& a, value& b);
 		void handle_table_multiply(value& a, value& b);
+		void handle_table_divide(value& a, value& b);
+		void handle_table_modulo(value& a, value& b);
+		void handle_table_exponentiate(value& a, value& b);
+
+		void handle_closure_multiply(value& a, value& b);
 
 		void handle_foreign_obj_add(value& a, value& b);
 		void handle_foreign_obj_subtract(value& a, value& b);
@@ -410,7 +428,11 @@ namespace HulaScript {
 		uint32_t next_function_id = 0;
 		uint32_t declared_top_level_locals = 0;
 
+		//executes instructions loaded in instructions
 		void execute();
+
+		//executes arbitrary_ins
+		void execute_arbitrary(const std::vector<instruction>& arbitrary_ins);
 
 		//allocates a zone in heap, represented by gc_block
 		gc_block allocate_block(size_t capacity, bool allow_collect);
@@ -458,6 +480,7 @@ namespace HulaScript {
 			}
 		}
 		friend class table_iterator;
+		friend class ffi_table_helper;
 
 		//COMPILER
 		struct compilation_context {
@@ -599,7 +622,7 @@ namespace HulaScript {
 				size_t count = 0;
 				for (auto it = lexical_scopes.rbegin(); it != lexical_scopes.rend(); it++) {
 					if (it->is_loop_block) {
-						count++;
+						count += it->declared_locals.size();
 					}
 					else {
 						break;

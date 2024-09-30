@@ -266,3 +266,15 @@ std::string instance::get_value_print_string(value to_print_init) {
 
 	return ss.str();
 }
+
+const int64_t instance::value::index(int64_t min, int64_t max, instance& instance) const {
+	expect_type(HulaScript::instance::value::vtype::NUMBER, instance);
+
+	if (data.number < min || data.number >= max) {
+		std::stringstream ss;
+		ss << data.number << " is outside the range of [" << min << ", " << max << ").";
+		instance.panic(ss.str());
+	}
+
+	return static_cast<int64_t>(data.number);
+}
