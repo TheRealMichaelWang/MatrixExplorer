@@ -3,18 +3,6 @@
 
 using namespace MatrixExplorer;
 
-int64_t HulaScript::instance::value::index(int64_t min, int64_t max, HulaScript::instance& instance) const {
-	expect_type(HulaScript::instance::value::vtype::NUMBER, instance);
-	
-	if (data.number < min || data.number >= max) {
-		std::stringstream ss;
-		ss << data.number << " is outside the range of [" << min << ", " << max << ").";
-		instance.panic(ss.str());
-	}
-
-	return static_cast<int64_t>(data.number);
-}
-
 HulaScript::instance::value matrix::get_elem(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
 	if (arguments.size() != 2) {
 		std::stringstream ss;
