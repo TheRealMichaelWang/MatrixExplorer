@@ -254,7 +254,7 @@ HulaScript::instance::value matrix::subtract_operator(HulaScript::instance::valu
 	new_elems.reserve(rows * cols);
 
 	for (size_t i = 0; i < rows * cols; i++) {
-		new_elems.push_back(elems[i] + mat_operand->elems[i]);
+		new_elems.push_back(elems[i] - mat_operand->elems[i]);
 	}
 
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, new_elems)));
@@ -293,6 +293,25 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 
 HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance)
 {
+	if (arguments.size() == 3 && !arguments[0].check_type(HulaScript::instance::value::FOREIGN_OBJECT)) {
+		size_t rows = arguments[0].index(0, INT64_MAX, instance);
+		size_t cols = arguments[1].index(0, INT64_MAX, instance);
+		
+		std::vector<double> elems;
+		elems.reserve(rows * cols);
+
+		for (size_t i = 1; i <= rows; i++) {
+			for (size_t j = 1; j <= cols; j++) {
+				elems.push_back(instance.invoke_value(arguments[2], {
+					HulaScript::instance::value(static_cast<double>(i)),
+					HulaScript::instance::value(static_cast<double>(j))
+				}).number(instance));
+			}
+		}
+
+		return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, elems)));
+	}
+
 	std::vector<double> elems;
 	std::optional<size_t> common_vec_dim = std::nullopt;
 

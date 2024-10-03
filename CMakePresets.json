@@ -27,11 +27,11 @@
             },
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
-            },/*
+            },
             "environment": {
               "CFLAGS": "/fsanitize=address",
               "CXXFLAGS": "/fsanitize=address"
-            }*/
+            }
         },
         {
             "name": "x64-release",

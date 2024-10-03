@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include "ffi.h"
+#include "ttmathbig.h"
 
 namespace MatrixExplorer {
 	class matrix : public HulaScript::foreign_method_object<matrix> {

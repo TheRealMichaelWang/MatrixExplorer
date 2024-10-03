@@ -17,6 +17,7 @@ add_executable (MatrixExplorer "MatrixExplorer.cpp" "matrix.h" "matrix.cpp" "pri
 set_property(TARGET MatrixExplorer PROPERTY CXX_STANDARD 20)
 set_property(TARGET MatrixExplorer PROPERTY CXX_STANDARD_REQUIRED ON)
 
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ttmath)
 target_link_libraries(${PROJECT_NAME} PRIVATE HulaScript)
 
 # TODO: Add tests and install targets if needed.
