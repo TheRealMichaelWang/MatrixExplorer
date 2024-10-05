@@ -21,9 +21,57 @@ namespace MatrixExplorer {
 		public:
 			mat_number_type(elem_type number) : number_(number) { }
 
+			static elem_type unwrap(HulaScript::instance::value value, HulaScript::instance& instance) {
+				mat_number_type* obj = dynamic_cast<mat_number_type*>(value.foreign_obj(instance));
+				if (obj == NULL) {
+					instance.panic("MatrixExplorer: Expected precise number, got something else.");
+				}
+				return obj->number_;
+			}
+
+		protected:
+			HulaScript::instance::value add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override{
+				elem_type b = unwrap(operand, instance);
+				return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(number_ + b)));
+			}
+
+			HulaScript::instance::value subtract_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override {
+				elem_type b = unwrap(operand, instance);
+				return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(number_ - b)));
+			}
+
+			HulaScript::instance::value multiply_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override {
+				elem_type b = unwrap(operand, instance);
+				return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(number_ * b)));
+			}
+
+			HulaScript::instance::value divide_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override {
+				elem_type b = unwrap(operand, instance);
+				return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(number_ / b)));
+			}
+
+			HulaScript::instance::value modulo_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override {
+				elem_type b = unwrap(operand, instance);
+				elem_type res = number_;
+				res.Mod(b);
+				return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(res)));
+			}
+
+			HulaScript::instance::value exponentiate_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override {
+				elem_type b = unwrap(operand, instance);
+				elem_type res = number_;
+				res.Pow(b);
+				return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(res)));
+			}
+
+		public:
 			size_t compute_hash() override {
 				//forgive me for this hash
 				return HulaScript::Hash::dj2b(number_.ToString().c_str());
+			}
+
+			std::string to_string() override {
+				return number_.ToString();
 			}
 		};
 

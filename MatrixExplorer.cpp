@@ -23,9 +23,8 @@ static HulaScript::instance::value print(std::vector<HulaScript::instance::value
 	return HulaScript::instance::value(static_cast<double>(arguments.size()));
 }
 
-static HulaScript::instance::value parse_numerical(std::string str) {
-	MatrixExplorer::matrix::elem_type number(str);
-	return 
+static HulaScript::instance::value parse_numerical(std::string str, HulaScript::instance& instance) {
+	return instance.add_foreign_object(std::make_unique<MatrixExplorer::matrix::mat_number_type>(MatrixExplorer::matrix::elem_type(str)));
 }
 
 int main()
@@ -35,7 +34,7 @@ int main()
 	cout << "\nCall \"help\", \"credits\", or \"license\" for more information.\n" << std::endl;
 
 	HulaScript::repl_completer repl_completer;
-	HulaScript::instance instance;
+	HulaScript::instance instance(parse_numerical);
 
 	instance.declare_global("quit", instance.make_foreign_function(quit));
 	instance.declare_global("print", instance.make_foreign_function(print));
