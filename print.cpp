@@ -12,9 +12,9 @@ std::string matrix::to_string() {
 				ss << ", ";
 			}
 
-			double elem = elems.get()[i * cols + j];
+			matrix::elem_type elem = elems.get()[i * cols + j];
 			if (elem == 0) { ss << "0"; } //to handle negative zero
-			else { ss << elem; }
+			else { ss << elem.ToString(); }
 		}
 		ss << "\n";
 	}

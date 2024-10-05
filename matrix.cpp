@@ -13,7 +13,7 @@ HulaScript::instance::value matrix::get_elem(std::vector<HulaScript::instance::v
 	int64_t row = arguments[0].index(1, rows + 1, instance) - 1;
 	int64_t col = arguments[1].index(1, cols + 1, instance) - 1;
 
-	return HulaScript::instance::value(elems[row * cols + col]);
+	return HulaScript::instance::value(elems[row * cols + col].ToDouble());
 }
 
 HulaScript::instance::value matrix::set_elem(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
@@ -32,7 +32,7 @@ HulaScript::instance::value matrix::set_elem(std::vector<HulaScript::instance::v
 }
 
 HulaScript::instance::value matrix::transpose(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-	std::vector<double> new_elems(rows * cols);
+	std::vector<elem_type> new_elems(rows * cols);
 
 	for (size_t i = 0; i < rows; i++) {
 		for (size_t j = 0; j < cols; j++) {
@@ -63,7 +63,7 @@ HulaScript::instance::value MatrixExplorer::matrix::augment(std::vector<HulaScri
 		instance.panic(ss.str());
 	}
 
-	std::vector<double> new_elems;
+	std::vector<elem_type> new_elems;
 	size_t new_cols = cols + mat_operand->cols;
 	new_elems.reserve(rows * new_cols);
 
@@ -145,7 +145,7 @@ HulaScript::instance::value MatrixExplorer::matrix::get_cols(std::vector<HulaScr
 }
 
 HulaScript::instance::value MatrixExplorer::matrix::get_coefficient_matrix(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-	std::vector<double> toret_elems;
+	std::vector<elem_type> toret_elems;
 	toret_elems.reserve(rows * (cols - 1));
 
 	for (size_t i = 0; i < rows; i++) {
@@ -158,7 +158,7 @@ HulaScript::instance::value MatrixExplorer::matrix::get_coefficient_matrix(std::
 }
 
 HulaScript::instance::value MatrixExplorer::matrix::get_solution_column(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
-	std::vector<double> toret_elems;
+	std::vector<elem_type> toret_elems;
 	toret_elems.reserve(rows);
 
 	for (size_t i = 0; i < rows; i++) {
@@ -173,7 +173,7 @@ HulaScript::instance::value MatrixExplorer::matrix::get_left_square(std::vector<
 		instance.panic("Cannot get the left square if the matrix has fewer columns than rows (left square side length is equal to row count).");
 	}
 
-	std::vector<double> toret_elems;
+	std::vector<elem_type> toret_elems;
 	toret_elems.reserve(rows * rows);
 	for (size_t i = 0; i < rows; i++) {
 		for (size_t j = rows; j < cols; j++) {
@@ -206,7 +206,7 @@ HulaScript::instance::value MatrixExplorer::matrix::get_sub_matrix(std::vector<H
 	size_t row_size = arguments[2].index(0, (rows - row_index) + 1, instance);
 	size_t col_size = arguments[3].index(0, (cols - col_index) + 1, instance);
 
-	std::vector<double> elems;
+	std::vector<elem_type> elems;
 	for (size_t i = 0; i < row_size; i++) {
 		for (size_t j = 0; j < col_size; j++) {
 			elems.push_back(this->elems[(row_index + i) * cols + (col_index + j)]);
@@ -228,7 +228,7 @@ HulaScript::instance::value matrix::add_operator(HulaScript::instance::value& op
 		return HulaScript::instance::value();
 	}
 
-	std::vector<double> new_elems;
+	std::vector<elem_type> new_elems;
 	new_elems.reserve(rows * cols);
 
 	for (size_t i = 0; i < rows * cols; i++) {
@@ -250,7 +250,7 @@ HulaScript::instance::value matrix::subtract_operator(HulaScript::instance::valu
 		return HulaScript::instance::value();
 	}
 
-	std::vector<double> new_elems;
+	std::vector<elem_type> new_elems;
 	new_elems.reserve(rows * cols);
 
 	for (size_t i = 0; i < rows * cols; i++) {
@@ -271,7 +271,7 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 		instance.panic("MatrixEplorer: You can only multiply a matrix with another matrix where the columns and rows are equal, respectivley.");
 	}
 
-	std::vector<double> new_elems;
+	std::vector<elem_type> new_elems;
 	new_elems.reserve(rows * mat_operand->cols);
 	
 	size_t common = cols;
@@ -279,7 +279,7 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 		for (size_t j = 0; j < mat_operand->cols; j++)
 		{
 			//result i,j = row i of this dot cols j of operand
-			double sum = 0;
+			elem_type sum = 0;
 			for (size_t k = 0; k < common; k++)
 			{
 				sum += elems[i * cols + k] * mat_operand->elems[j + k * mat_operand->cols];
@@ -297,22 +297,22 @@ HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::
 		size_t rows = arguments[0].index(0, INT64_MAX, instance);
 		size_t cols = arguments[1].index(0, INT64_MAX, instance);
 		
-		std::vector<double> elems;
+		std::vector<matrix::elem_type> elems;
 		elems.reserve(rows * cols);
 
 		for (size_t i = 1; i <= rows; i++) {
 			for (size_t j = 1; j <= cols; j++) {
-				elems.push_back(instance.invoke_value(arguments[2], {
+				elems.push_back(matrix::elem_type(instance.invoke_value(arguments[2], {
 					HulaScript::instance::value(static_cast<double>(i)),
 					HulaScript::instance::value(static_cast<double>(j))
-				}).number(instance));
+				}).number(instance)));
 			}
 		}
 
 		return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, elems)));
 	}
 
-	std::vector<double> elems;
+	std::vector<matrix::elem_type> elems;
 	std::optional<size_t> common_vec_dim = std::nullopt;
 
 	for (auto& arg : arguments) {
@@ -345,7 +345,7 @@ HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::
 
 	size_t rows = common_vec_dim.has_value() ? common_vec_dim.value() : 0;
 	
-	std::vector<double> new_elems(elems.size());
+	std::vector<matrix::elem_type> new_elems(elems.size());
 	for (size_t i = 0; i < arguments.size(); i++) {
 		for (size_t j = 0; j < rows; j++) {
 			new_elems[j * arguments.size() + i] = elems[i * rows + j];
@@ -356,7 +356,7 @@ HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::
 }
 
 HulaScript::instance::value MatrixExplorer::make_vector(std::vector<HulaScript::instance::value> arguments, HulaScript::instance& instance) {
-	std::vector<double> elems;
+	std::vector<matrix::elem_type> elems;
 	elems.reserve(arguments.size());
 
 	for (auto& arg : arguments) {
@@ -375,7 +375,7 @@ HulaScript::instance::value MatrixExplorer::make_identity_matrix(std::vector<Hul
 
 	int64_t dim = arguments[0].index(0, INT64_MAX, instance);
 	
-	std::vector<double> elems;
+	std::vector<matrix::elem_type> elems;
 	elems.reserve(dim * dim);
 	for (size_t i = 0; i < dim; i++) {
 		for (size_t j = 0; j < dim; j++) {
@@ -396,6 +396,6 @@ HulaScript::instance::value MatrixExplorer::make_zero_matrix(std::vector<HulaScr
 	size_t rows = arguments[0].index(0, INT64_MAX, instance);
 	size_t cols = arguments[1].index(0, INT64_MAX, instance);
 
-	std::vector<double> elems(rows * cols, 0);
+	std::vector<matrix::elem_type> elems(rows * cols, 0);
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(rows, cols, elems)));
 }

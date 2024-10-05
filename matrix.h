@@ -4,13 +4,18 @@
 #include <cstring>
 #include <vector>
 #include "ffi.h"
+
+#define TTMATH_NOASM
 #include "ttmathbig.h"
 
 namespace MatrixExplorer {
 	class matrix : public HulaScript::foreign_method_object<matrix> {
+	public:
+		using elem_type = ttmath::Big<2, 2>;
+
 	private:
 		size_t rows, cols;
-		std::unique_ptr<double[]> elems;
+		std::unique_ptr<elem_type[]> elems;
 
 		HulaScript::instance::value add_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override;
 		HulaScript::instance::value subtract_operator(HulaScript::instance::value& operand, HulaScript::instance& instance) override;
@@ -52,13 +57,13 @@ namespace MatrixExplorer {
 		//add one to get right elementary matrix
 
 		void swap_rows(size_t a, size_t b);
-		void scale_row(size_t i, double scalar);
-		void subtract_rows(size_t subtract_from, size_t how_much, double scale);
+		void scale_row(size_t i, elem_type scalar);
+		void subtract_rows(size_t subtract_from, size_t how_much, elem_type scale);
 	public:
 
-		matrix(size_t rows, size_t cols, std::vector<double> elems_vec) : rows(rows), cols(cols), elems(new double[elems_vec.size()]) {
+		matrix(size_t rows, size_t cols, std::vector<elem_type> elems_vec) : rows(rows), cols(cols), elems(new elem_type[elems_vec.size()]) {
 			assert(elems_vec.size() == rows * cols);
-			std::memcpy(elems.get(), elems_vec.data(), elems_vec.size() * sizeof(double));
+			std::memcpy(elems.get(), elems_vec.data(), elems_vec.size() * sizeof(elem_type));
 
 			declare_method("get", &matrix::get_elem);
 			declare_method("set", &matrix::set_elem);
@@ -87,7 +92,7 @@ namespace MatrixExplorer {
 			return std::make_pair(rows, cols);
 		}
 
-		const double* elements() const noexcept {
+		const elem_type* elements() const noexcept {
 			return elems.get();
 		}
 
