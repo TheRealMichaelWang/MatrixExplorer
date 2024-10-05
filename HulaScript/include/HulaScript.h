@@ -97,7 +97,7 @@ namespace HulaScript {
 
 			const int64_t index(int64_t min, int64_t max, instance& instance) const;
 
-			const constexpr size_t hash() const noexcept {
+			const constexpr size_t hash() const {
 				size_t payload = 0;
 				switch (type)
 				{
@@ -111,12 +111,13 @@ namespace HulaScript {
 					[[fallthrough]];
 				case vtype::TABLE:
 					[[fallthrough]];
-				case vtype::FOREIGN_OBJECT:
-					[[fallthrough]];
 				case vtype::INTERNAL_TABLE_GET_ITERATOR:
 					[[fallthrough]];
 				case vtype::NUMBER:
 					payload = data.id;
+					break;
+				case vtype::FOREIGN_OBJECT:
+					payload = data.foreign_object->compute_hash();
 					break;
 				case vtype::STRING: {
 					payload = Hash::dj2b(data.str);
@@ -166,6 +167,10 @@ namespace HulaScript {
 
 			virtual void trace(std::vector<value>& to_trace) { }
 			virtual std::string to_string() { return "Untitled Foreign Object"; }
+
+			virtual size_t compute_hash() {
+				return (size_t)this;
+			}
 
 			friend class instance;
 		public:

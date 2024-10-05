@@ -13,6 +13,11 @@ namespace MatrixExplorer {
 	public:
 		using elem_type = ttmath::Big<2, 2>;
 
+		class mat_number_type : public HulaScript::instance::foreign_object {
+		private:
+			elem_type number_;
+		};
+
 	private:
 		size_t rows, cols;
 		std::unique_ptr<elem_type[]> elems;
