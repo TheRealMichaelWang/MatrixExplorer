@@ -164,7 +164,7 @@ void instance::compile_value(compilation_context& context, bool expects_statemen
 		context.tokenizer.scan_token();
 		break;
 	case token_type::NUMBER_CUSTOM: {
-		context.emit_load_constant(add_constant(numerical_parser(token.str())), repl_used_constants);
+		context.emit_load_constant(add_constant(numerical_parser(token.str(), *this)), repl_used_constants);
 		context.tokenizer.scan_token();
 		break;
 	}

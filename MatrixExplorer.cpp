@@ -23,6 +23,11 @@ static HulaScript::instance::value print(std::vector<HulaScript::instance::value
 	return HulaScript::instance::value(static_cast<double>(arguments.size()));
 }
 
+static HulaScript::instance::value parse_numerical(std::string str) {
+	MatrixExplorer::matrix::elem_type number(str);
+	return 
+}
+
 int main()
 {
 	cout << "Matrix Explorer 2024" << std::endl;

@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include "ffi.h"
+#include "hash.h"
 
 #define TTMATH_NOASM
 #include "ttmathbig.h"
@@ -16,6 +17,14 @@ namespace MatrixExplorer {
 		class mat_number_type : public HulaScript::instance::foreign_object {
 		private:
 			elem_type number_;
+
+		public:
+			mat_number_type(elem_type number) : number_(number) { }
+
+			size_t compute_hash() override {
+				//forgive me for this hash
+				return HulaScript::Hash::dj2b(number_.ToString().c_str());
+			}
 		};
 
 	private:

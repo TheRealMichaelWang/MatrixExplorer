@@ -177,7 +177,7 @@ namespace HulaScript {
 			virtual ~foreign_object() = default;
 		};
 
-		typedef value(*custom_numerical_parser)(std::string numerical_str);
+		typedef value(*custom_numerical_parser)(std::string numerical_str, instance& instance);
 
 		std::variant<value, std::vector<compilation_error>, std::monostate> run(std::string source, std::optional<std::string> file_name, bool repl_mode = true, bool ignore_warnings=false);
 		std::optional<value> run_loaded();
