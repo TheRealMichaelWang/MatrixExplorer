@@ -360,7 +360,7 @@ HulaScript::instance::value MatrixExplorer::make_vector(std::vector<HulaScript::
 	elems.reserve(arguments.size());
 
 	for (auto& arg : arguments) {
-		elems.push_back(arg.number(instance));
+		elems.push_back(matrix::mat_number_type::unwrap(arg, instance));
 	}
 
 	return instance.add_foreign_object(std::make_unique<matrix>(matrix(elems.size(), 1, elems)));

@@ -81,6 +81,10 @@ namespace HulaScript {
 			value(uint32_t method_id, foreign_object* foreign_object) : type(vtype::FOREIGN_OBJECT_METHOD), flags(flags::NONE), function_id(method_id), data({ .foreign_object = foreign_object }) { }
 
 			double number(instance& instance) const {
+				if (check_type(vtype::FOREIGN_OBJECT)) {
+					return data.foreign_object->to_number();
+				}
+
 				expect_type(vtype::NUMBER, instance);
 				return data.number;
 			}
@@ -167,6 +171,7 @@ namespace HulaScript {
 
 			virtual void trace(std::vector<value>& to_trace) { }
 			virtual std::string to_string() { return "Untitled Foreign Object"; }
+			virtual double to_number() { return NAN; }
 
 			virtual size_t compute_hash() {
 				return (size_t)this;

@@ -25,6 +25,7 @@ namespace MatrixExplorer {
 				mat_number_type* obj = dynamic_cast<mat_number_type*>(value.foreign_obj(instance));
 				if (obj == NULL) {
 					instance.panic("MatrixExplorer: Expected precise number, got something else.");
+					return elem_type(0);
 				}
 				return obj->number_;
 			}
@@ -72,6 +73,10 @@ namespace MatrixExplorer {
 
 			std::string to_string() override {
 				return number_.ToString();
+			}
+
+			double to_number() override {
+				return number_.ToDouble();
 			}
 		};
 

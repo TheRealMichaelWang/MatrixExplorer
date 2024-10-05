@@ -29,7 +29,7 @@ matrix matrix::reduce() const noexcept {
 	for (size_t i = 0; i < cols; i++) {
 		bool found_nonzero = false;
 		for (size_t j = i; j < rows; j++) {
-			if (mat.elems[j * cols + i] != 0) {
+			if (!mat.elems[j * cols + i].IsZero()) {
 				mat.swap_rows(i, j);
 				found_nonzero = true;
 				break;
@@ -40,7 +40,7 @@ matrix matrix::reduce() const noexcept {
 			auto non_zero_elem = mat.elems[i * cols + i];
 			for (size_t j = i + 1; j < rows; j++) {
 				auto leading = mat.elems[j * cols + i];
-				if (leading != 0) {
+				if (!leading.IsZero()) {
 					mat.subtract_rows(j, i, leading / non_zero_elem);
 				}
 			}
@@ -55,7 +55,7 @@ matrix matrix::row_reduce() const noexcept {
 
 	for (size_t i = 0; i < std::min(reduced.rows, reduced.cols); i++) {
 		elem_type elem = reduced.elems[i * cols + i];
-		if (elem != 0) {
+		if (!elem.IsZero()) {
 			reduced.scale_row(i, elem_type(1) / elem);
 		}
 	}
@@ -75,7 +75,7 @@ bool matrix::is_ref() const noexcept {
 	for (size_t i = 0; i < rows; i++) {
 		bool found_pivot = false;
 		for (size_t j = 0; j < cols; j++) {
-			if (elems[i * cols + j] != 0) { //potential pivot detected
+			if (!elems[i * cols + j].IsZero()) { //potential pivot detected
 				if (last_pivot_pos.has_value() && j <= last_pivot_pos.value()) {
 					return false;
 				}
@@ -97,7 +97,7 @@ bool matrix::is_rref() const noexcept {
 	for (size_t i = 0; i < rows; i++) {
 		bool found_pivot = false;
 		for (size_t j = 0; j < cols; j++) {
-			if (elems[i * cols + j] != 0) { //potential pivot detected
+			if (!elems[i * cols + j].IsZero()) { //potential pivot detected
 				if (elems[i * cols + j] != 1) {
 					return false;
 				}
@@ -110,7 +110,7 @@ bool matrix::is_rref() const noexcept {
 
 				if (i > 0) {
 					for (size_t k = 0; k < i - 1; k++) {
-						if (elems[k * cols + j] != 0) {
+						if (!elems[k * cols + j].IsZero()) {
 							return false;
 						}
 					}
