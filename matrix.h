@@ -125,6 +125,7 @@ namespace MatrixExplorer {
 
 		void swap_rows(size_t a, size_t b);
 		void scale_row(size_t i, elem_type scalar);
+		void add_rows(size_t add_to, size_t how_much);
 		void subtract_rows(size_t subtract_from, size_t how_much, elem_type scale);
 	public:
 

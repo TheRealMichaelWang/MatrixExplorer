@@ -16,6 +16,12 @@ void matrix::scale_row(size_t k, elem_type scalar) {
 	}
 }
 
+void matrix::add_rows(size_t add_to, size_t how_much) {
+	for (size_t i = 0; i < cols; i++) {
+		elems[add_to * cols + i] += elems[how_much * cols + i];
+	}
+}
+
 void matrix::subtract_rows(size_t subtract_from, size_t how_much, elem_type scale) {
 	for (size_t i = 0; i < cols; i++) {
 		elems[subtract_from * cols + i] -= elems[how_much * cols + i] * scale;
@@ -41,7 +47,12 @@ matrix matrix::reduce() const noexcept {
 			for (size_t j = i + 1; j < rows; j++) {
 				auto leading = mat.elems[j * cols + i];
 				if (!leading.IsZero()) {
-					mat.subtract_rows(j, i, leading / non_zero_elem);
+					if (leading == -non_zero_elem) {
+						mat.add_rows(j, i);
+					}
+					else {
+						mat.subtract_rows(j, i, leading / non_zero_elem);
+					}
 				}
 			}
 		}
