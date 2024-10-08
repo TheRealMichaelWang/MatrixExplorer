@@ -13,8 +13,8 @@ std::string matrix::to_string() {
 			}
 
 			matrix::elem_type elem = elems.get()[i * cols + j];
-			if (elem == 0) { ss << "0"; } //to handle negative zero
-			else { ss << elem.ToString(); }
+			if (elem.is_zero()) { ss << "0"; } //to handle negative zero
+			else { ss << elem.to_string(); }
 		}
 		ss << "\n";
 	}

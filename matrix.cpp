@@ -13,7 +13,7 @@ HulaScript::instance::value matrix::get_elem(std::vector<HulaScript::instance::v
 	int64_t row = arguments[0].index(1, rows + 1, instance) - 1;
 	int64_t col = arguments[1].index(1, cols + 1, instance) - 1;
 
-	return HulaScript::instance::value(elems[row * cols + col].ToDouble());
+	return instance.add_foreign_object(std::make_unique<mat_number_type>(mat_number_type(elems[row * cols + col])));
 }
 
 HulaScript::instance::value matrix::set_elem(std::vector<HulaScript::instance::value>& arguments, HulaScript::instance& instance) {
@@ -26,7 +26,7 @@ HulaScript::instance::value matrix::set_elem(std::vector<HulaScript::instance::v
 	int64_t row = arguments[0].index(1, rows + 1, instance) - 1;
 	int64_t col = arguments[1].index(1, cols + 1, instance) - 1;
 
-	elems[row * cols + col] = arguments[2].number(instance);
+	elems[row * cols + col] = mat_number_type::unwrap(arguments[2], instance);
 
 	return HulaScript::instance::value(arguments[2]);
 }
@@ -279,10 +279,10 @@ HulaScript::instance::value matrix::multiply_operator(HulaScript::instance::valu
 		for (size_t j = 0; j < mat_operand->cols; j++)
 		{
 			//result i,j = row i of this dot cols j of operand
-			elem_type sum = 0;
+			elem_type sum = rational(0);
 			for (size_t k = 0; k < common; k++)
 			{
-				sum += elems[i * cols + k] * mat_operand->elems[j + k * mat_operand->cols];
+				sum = sum + elems[i * cols + k] * mat_operand->elems[j + k * mat_operand->cols];
 			}
 			new_elems.push_back(sum);
 		}
@@ -302,10 +302,10 @@ HulaScript::instance::value MatrixExplorer::make_matrix(std::vector<HulaScript::
 
 		for (size_t i = 1; i <= rows; i++) {
 			for (size_t j = 1; j <= cols; j++) {
-				elems.push_back(matrix::elem_type(instance.invoke_value(arguments[2], {
+				elems.push_back(matrix::mat_number_type::unwrap(instance.invoke_value(arguments[2], {
 					HulaScript::instance::value(static_cast<double>(i)),
 					HulaScript::instance::value(static_cast<double>(j))
-				}).number(instance)));
+				}), instance));
 			}
 		}
 
@@ -379,7 +379,7 @@ HulaScript::instance::value MatrixExplorer::make_identity_matrix(std::vector<Hul
 	elems.reserve(dim * dim);
 	for (size_t i = 0; i < dim; i++) {
 		for (size_t j = 0; j < dim; j++) {
-			elems.push_back(i == j ? 1 : 0);
+			elems.push_back(i == j ? rational(1) : rational(0));
 		}
 	}
 

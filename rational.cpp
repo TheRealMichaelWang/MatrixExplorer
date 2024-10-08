@@ -1,246 +1,121 @@
 #include <stdexcept>
 #include <cassert>
 #include "rational.h"
+#include "hash.h"
 
 using namespace MatrixExplorer;
 
 rational rational::parse(std::string str) {
-	if (str.size() == 0) {
-		throw std::invalid_argument("Str must have a length greater than zero.");
-	}
+	uint64_t numerator = 0;
+	uint32_t denominator = 1;
 
-	size_t pos = 0;
-
-	bool is_negative = (str.at(pos) == '-');
-	if (is_negative) {
-		pos++;
-		if (pos == str.size()) {
-			throw std::invalid_argument("Negate cannot be followed by EOF.");
-		}
-	}
-
-	while (pos < str.size() && str.at(pos) == '0') {
-		pos++;
-	}
-
-	if (pos == str.size()) {
-		return rational(0, 0, 0, flags::IS_ZERO);
-	}
-
-	uint64_t int_part = 0;
-	uint16_t significant_int_digits = 1;
-	while (pos < str.size() && str.at(pos) != '.') {
-		char digit = str.at(pos);
-		if (digit == '0') {
-			if (significant_int_digits == UINT16_MAX) {
-				throw std::invalid_argument("Overflow: Cannot have more that 2^16-1 significant digits.");
+	bool is_negate = false;
+	bool decimal_detected = false;
+	for (size_t i = 0; i < str.size(); i++) {
+		char c = str.at(i);
+		if (c >= '0' && c <= '9') {
+			if (numerator > UINT64_MAX / 10) {
+				throw std::invalid_argument("Overflow: Numerator is too large.");
 			}
 
-			significant_int_digits++;
-		}
-		else if (digit >= '1' && digit <= '9') {
-			while (significant_int_digits > 0) {
-				if (int_part >= UINT16_MAX / 10) {
-					throw std::invalid_argument("Overflow: Int part too big.");
-				}
-
-				int_part *= 10;
-				significant_int_digits--;
-			}
-			significant_int_digits = 1;
-			int_part += (digit - '0');
-		}
-		else {
-			throw std::invalid_argument("Only digit characters (0-9) are valid.");
-		}
-
-		pos++;
-	}
-	significant_int_digits--;
-
-	if (pos == str.size()) { //return int 
-		return rational(int_part, 1, significant_int_digits);
-	}
-	
-	assert(str.at(pos) == '.');
-	pos++;
-
-	uint16_t significant_frac_digits = 1;
-	while (pos < str.size() && str.at(pos) == '0') {
-		pos++;
-
-		if (significant_frac_digits == UINT16_MAX) {
-			throw std::invalid_argument("Overflow: To many zeros behind decimal.");
-		}
-
-		significant_frac_digits++;
-	}
-
-	if (pos == str.size()) { //return int.00 
-		if (int_part == 0) {
-			return rational(0, 0, 0, 0, 0, flags::IS_ZERO);
-		}
-		return rational(int_part, 1, significant_int_digits);
-	}
-
-	uint16_t temp_frac_digits = 1;
-	uint64_t frac_part = 0;
-	while (pos < str.size()) {
-		char digit = str.at(pos);
-
-		if (digit == '0') {
-			if (temp_frac_digits == UINT16_MAX) {
-				throw std::invalid_argument("Overflow: Fraction part too small.");
-			}
-
-			temp_frac_digits++;
-		}
-		else if (digit >= '1' && digit <= '9') {
-			if (significant_frac_digits >= UINT16_MAX - temp_frac_digits) {
-				throw std::invalid_argument("Overflow: To many zeros behind decimal.");
-			}
-
-			significant_frac_digits += temp_frac_digits;
-			while (temp_frac_digits > 0) {
-				frac_part *= 10;
-				temp_frac_digits--;
-			}
-			temp_frac_digits = 1;
-			frac_part += (digit -= '0');
-		}
-		else {
-			throw std::invalid_argument("Only digit characters (0-9) are valid.");
-		}
-		 
-		pos++;
-	}
-
-	if (int_part == 0) {
-		return rational(frac_part, 1, significant_frac_digits, 1, 1, flags::SIGNIFICANT_DIGITS_IS_NEGATIVE);
-	}
-	else {
-		uint64_t numerator = int_part;
-		for (size_t i = 0; i < static_cast<size_t>(significant_int_digits) + static_cast<size_t>(significant_frac_digits); i++) {
-			if (numerator >= UINT64_MAX / 10) {
-				throw std::invalid_argument("Overflow: Numerator too large.");
-			}
 			numerator *= 10;
-		}
-		numerator = numerator + frac_part;
-		return rational(numerator, 1, significant_frac_digits, 1, 1, flags::SIGNIFICANT_DIGITS_IS_NEGATIVE);
-	}
-}
+			numerator += (c - '0');
 
-rational::rational(uint64_t numerator_, uint64_t denominator_, uint16_t significant_digits_, uint16_t exponent, uint16_t root, flags my_flags) : numerator(numerator_), denominator(denominator_), significant_digits(significant_digits_), exponent(exponent), root(root), my_flags(my_flags) {
-	if (!(my_flags & flags::IS_ZERO)) {
-		if (denominator == 0) {
-			throw std::invalid_argument("Denominator cannot be zero.");
-		}
-		if (root == 0) {
-			throw std::invalid_argument("Numerator cannot be zero.");
-		}
-	}
-
-	uint64_t common = gcd(numerator, denominator);
-	numerator /= common;
-	denominator /= common;
-
-	if (significant_digits != 0) {
-		if (my_flags & flags::SIGNIFICANT_DIGITS_IS_NEGATIVE) {
-			uint16_t old_sig_digits = significant_digits;
-			for (uint_fast16_t i = 0; i < old_sig_digits; i++) {
-				uint64_t common = gcd(numerator, 10);
-
-				if (common == 1) {
-					break;
+			if (decimal_detected) {
+				if (denominator > UINT32_MAX / 10) {
+					throw std::invalid_argument("Overflow: Denominator is too large.");
 				}
-
-				numerator /= common;
-				denominator *= (10 / common);
-				significant_digits--;
+				denominator *= 10;
 			}
+		}
+		else if (c == '.') {
+			if (decimal_detected) {
+				throw std::invalid_argument("Format: Two decimals detected.");
+			}
+
+			decimal_detected = true;
+		}
+		else if (c == '-') {
+			if (is_negate) {
+				throw std::invalid_argument("Format: Two negates detected.");
+			}
+			is_negate = true;
 		}
 		else {
-			uint16_t old_sig_digits = significant_digits;
-			for (uint_fast16_t i = 0; i < old_sig_digits; i++) {
-				uint64_t common = gcd(denominator, 10);
-				
-				numerator *= (10 / common);
-				denominator /= common;
-				significant_digits--;
-			}
+			throw std::invalid_argument("Format: Must be digit (0-9).");
 		}
 	}
 
-	uint64_t exp_common = gcd(exponent, root);
-	this->exponent /= exp_common;
-	this->root /= exp_common;
+	return rational(numerator, denominator, is_negate);
 }
 
-std::string MatrixExplorer::rational::to_string()
-{
-	if (my_flags & flags::IS_ZERO) {
-		return "0";
+std::string MatrixExplorer::rational::to_string(bool print_as_frac) {
+	std::string s;
+	if (is_negate) {
+		s.push_back('-');
 	}
-	else {
-		std::string s;
-		if (my_flags & flags::NUMERATOR_IS_NEGATIVE) {
-			s.push_back('-');
-		}
 
-		bool encapsulate_paren = false;
-		if (exponent != 1 || root != 1) {
-			encapsulate_paren = (denominator != 1);
-			s.push_back('(');
-		}
-
-		if (my_flags & flags::SIGNIFICANT_DIGITS_IS_NEGATIVE) {
-			std::string s2;
-			write_int(s2, numerator);
-
-			if (significant_digits >= s2.length()) {
-				s.push_back('0');
-				s.push_back('.');
-				for (size_t i = s2.length(); i < significant_digits; i++) {
-					s.push_back('0');
-				}
-				s.append(s2);
-			}
-			else {
-				size_t pos = s.length() - significant_digits;
-				for (size_t i = 0; i < s2.length(); i++) {
-					if (i == pos) {
-						s.push_back('.');
-					}
-					s.push_back(s2.at(i));
-				}
-			}
-		}
-		else {
-			write_int(s, numerator);
-			for (size_t i = 0; i < significant_digits; i++) {
-				s.push_back('0');
-			}
-		}
-
+	if (print_as_frac) {
+		write_int(s, numerator);
 		if (denominator != 1) {
 			s.push_back('/');
 			write_int(s, denominator);
 		}
+	}
+	else {
+		uint64_t denom10 = 1;
+		size_t decimal_digits = 0;
+		for (;;) {
+			if(denom10 % denominator == 0) {
+				break;
+			}
 
-		if (encapsulate_paren) {
-			s.push_back(')');
+			if (denom10 > UINT64_MAX / 10) {
+				return to_string(true);
+			}
+			denom10 *= 10;
+			decimal_digits++;
 		}
 
-		if (exponent != 1 || root != 1) {
-			s.push_back('^');
+		uint64_t factor = denom10 / denominator;
+		if (numerator > UINT64_MAX / factor) {
+			return to_string(true);
+		}
 
-			if (root == 1) {
-				write_int(s, exponent);
+		std::string s2;
+		write_int(s2, numerator * factor);
+
+		if (decimal_digits == 0) {
+			return s2;
+		}
+
+		if (s2.length() < decimal_digits) {
+			s.push_back('0');
+			s.push_back('.');
+
+			for (size_t i = 0; i < decimal_digits - s2.length(); i++) {
+				s.push_back('0');
 			}
-			else {
-				write_int(s, exponent);
+
+			s.append(s2);
+		}
+		else {
+			for (size_t i = 0; i < s2.length() - decimal_digits; i++) {
+				s.push_back(s2.at(i));
+			}
+			s.push_back('.');
+			for (size_t i = s2.length() - decimal_digits; i < s2.length(); i++) {
+				s.push_back(s2.at(i));
 			}
 		}
 	}
+
+	return s;
+}
+
+size_t MatrixExplorer::rational::compute_hash() {
+	size_t lhs = denominator;
+	lhs = lhs << sizeof(bool);
+	lhs += static_cast<size_t>(is_negate);
+	return HulaScript::Hash::combine(numerator, lhs);
 }

@@ -24,7 +24,7 @@ static HulaScript::instance::value print(std::vector<HulaScript::instance::value
 }
 
 static HulaScript::instance::value parse_numerical(std::string str, HulaScript::instance& instance) {
-	return instance.add_foreign_object(std::make_unique<MatrixExplorer::matrix::mat_number_type>(MatrixExplorer::matrix::elem_type(str)));
+	return instance.add_foreign_object(std::make_unique<MatrixExplorer::matrix::mat_number_type>(MatrixExplorer::rational::parse(str)));
 }
 
 int main()
